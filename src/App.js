@@ -2,13 +2,13 @@ import React from 'react'
 import { ApolloProvider } from 'react-apollo'
 import { Query } from 'react-apollo'
 import client from './client.js'
-import { ME } from './graphql'
 import { SEARCH_REPOSITORIES } from './graphql'
 
+const PER_PAGE = 5
 const DEFAULT_STATE = {
   after: null,
   before: null,
-  first: 5,
+  first: PER_PAGE,
   last: null,
   query: "フロントエンドエンジニア"
 }
@@ -33,6 +33,15 @@ class App extends React.Component {
     event.preventDefault()
   }
 
+  goNext(search) {
+    this.setState({
+      first: PER_PAGE,
+      after: search.pageInfo.endCursor,
+      last: null,
+      before: null
+    })
+  }
+
   render() {
     const { query, first, last, before, after } = this.state
     console.log(query)
@@ -51,9 +60,6 @@ class App extends React.Component {
               if (loading) return 'Loading...'
               if (error) return `Error! ${error.message}`
 
-              console.log({data})
-              console.log(data.search)
-
               const search = data.search
               const repositoryCount = search.repositoryCount
               const repositoryUnit = repositoryCount === 1 ? 'Repository' : 'Repositories'
@@ -67,12 +73,21 @@ class App extends React.Component {
                         const node = edge.node
                         return (
                           <li key={node.id}>
-                            <a href={node.url} target="_blank">{node.name}</a>
+                            <a href={node.url} target="_blank" rel="noopener noreferrer">{node.name}</a>
                           </li>
                         )
                       })
                     }
                   </ul>
+
+                  {
+                    search.pageInfo.hasNextPage ?
+                      <button onClick={this.goNext.bind(this, search)}>
+                        Next
+                      </button>
+                      :
+                      null
+                  }
                 </React.Fragment>
               )
             }
