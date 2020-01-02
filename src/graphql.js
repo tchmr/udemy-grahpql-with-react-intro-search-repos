@@ -14,6 +14,7 @@ export const SEARCH_REPOSITORIES = gql`
         cursor
         node {
           ... on Repository {
+            id
             name
             url
             stargazers {
