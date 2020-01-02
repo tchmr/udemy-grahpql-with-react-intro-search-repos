@@ -52,7 +52,13 @@ class App extends React.Component {
               if (error) return `Error! ${error.message}`
 
               console.log({data})
-              return <div></div>
+              console.log(data.search)
+
+              const search = data.search
+              const repositoryCount = search.repositoryCount
+              const repositoryUnit = repositoryCount === 1 ? 'Repository' : 'Repositories'
+              const title = `GitHub Repositories Search Result - ${data.search.repositoryCount} ${repositoryUnit}`
+              return <h2>{title}</h2>
             }
           }
         </Query>
