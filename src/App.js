@@ -4,7 +4,7 @@ import client from './client.js'
 import { ADD_STAR, REMOVE_STAR, SEARCH_REPOSITORIES } from './graphql'
 
 const StarButton = props => {
-  const node = props.node
+  const { node, query, first, last, before, after } = props
   const totalCount = node.stargazers.totalCount
   const viewerHasStarred = node.viewerHasStarred
   const starCount = totalCount === 1 ? "1 star" : `${totalCount} stars`
@@ -23,7 +23,17 @@ const StarButton = props => {
   }
 
   return (
-    <Mutation mutation={viewerHasStarred ? REMOVE_STAR : ADD_STAR}>
+    <Mutation
+      mutation={viewerHasStarred ? REMOVE_STAR : ADD_STAR}
+      refetchQueries={ mutationResult => {
+        return [
+          {
+            query: SEARCH_REPOSITORIES,
+            variables: { query, first, last, before, after }
+          }
+        ]
+      }}
+    >
       {
         addOrRemoveStar => <StarStatus addOrRemoveStar={addOrRemoveStar} />
       }
@@ -80,8 +90,6 @@ class App extends React.Component {
 
   render() {
     const { query, first, last, before, after } = this.state
-    console.log(query)
-
     return (
       <ApolloProvider client={client}>
         <form>
@@ -100,7 +108,6 @@ class App extends React.Component {
               const repositoryCount = search.repositoryCount
               const repositoryUnit = repositoryCount === 1 ? 'Repository' : 'Repositories'
               const title = `GitHub Repositories Search Result - ${data.search.repositoryCount} ${repositoryUnit}`
-              console.log(search)
 
               return (
                 <React.Fragment>
@@ -113,7 +120,7 @@ class App extends React.Component {
                           <li key={node.id}>
                             <a href={node.url} target="_blank" rel="noopener noreferrer">{node.name}</a>
                             &nbsp;
-                            <StarButton node={node}/>
+                            <StarButton node={node} {...{query, first, last, before, after}}/>
                           </li>
                         )
                       })
